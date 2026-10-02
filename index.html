@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#06152d" />
+    <meta
+      name="description"
+      content="Um contador divertido para transformar pequenas brigas em mais diálogo, empatia e reconciliação."
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+    <title>Contador de Ofensas do Casal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist+Pixel:wght@400;500;600;700&family=Lexend:wght@400;500;600;700;800&display=block"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="js/script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header" id="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#hero" aria-label="Contador de Ofensas do Casal — início">
+          <img src="assets/logo.svg" alt="Contador de Ofensas" />
+        </a>
+
+        <nav class="main-nav" id="main-nav" aria-label="Navegação principal">
+          <a class="nav-link is-active" href="#hero" data-section="hero">Início</a>
+          <a class="nav-link" href="#memories" data-section="memories">Memórias da Paz</a>
+          <a class="nav-link" href="#sobre" data-section="sobre">Sobre o Projeto</a>
+        </nav>
+
+        <div class="header-pledge" aria-label="Juntos por um diálogo melhor">
+          <img src="assets/icon-coracao.webp" alt="" aria-hidden="true" width="265" height="253" />
+          <span>Juntos por um diálogo melhor</span>
+        </div>
+
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="hero" aria-labelledby="hero-title">
+        <div class="arena-backdrop" aria-hidden="true">
+          <picture class="hero-background-picture">
+            <source media="(max-width: 767px)" srcset="assets/fundo-hero-mobile.webp" type="image/webp" />
+            <img class="hero-background-image" src="assets/fundo-hero.webp" alt="" width="1832" height="859" fetchpriority="high" />
+          </picture>
+          <div class="arena-scanlines"></div>
+        </div>
+
+        <div class="hero-inner">
+          <div class="hero-intro">
+            <img id="hero-title" class="hero-title" src="assets/h1.webp" alt="Contador de Ofensas do Casal" width="1870" height="519" />
+          </div>
+
+          <div class="peace-toast" id="peace-toast" role="status" aria-live="polite"></div>
+
+          <div class="battle-stage">
+            <article class="player-panel player-panel--ygor" aria-labelledby="ygor-card-title">
+              <div class="fighter-wrap fighter-wrap--ygor">
+                <span class="fighter-heart" aria-hidden="true">
+                  <img src="assets/icon-coracao.webp" alt="" width="265" height="253" />
+                </span>
+                <img class="fighter" src="assets/ygor.webp" alt="Ygor em posição de luta" width="1024" height="1536" />
+              </div>
+
+              <div class="player-stack">
+                <div class="counter-card counter-card--ygor">
+                  <img class="frame frame--counter" src="assets/card-ygor.svg" alt="" aria-hidden="true" />
+                  <div class="counter-content">
+                    <div class="counter-heading">
+                      <img class="profile" src="assets/ygor-perfil.svg" alt="Retrato de Ygor" width="993" height="1161" />
+                      <h2 id="ygor-card-title">Ofensas do <strong>Ygor</strong></h2>
+                    </div>
+                    <p class="score-number" id="ygor-score" aria-live="polite">0</p>
+                    <p class="counter-tagline">“Menos ego, mais nós.”</p>
+                  </div>
+                </div>
+
+                <div class="action-stack">
+                  <button class="arcade-button arcade-button--offense" type="button" data-action="offense" data-person="ygor" aria-label="Registrar uma ofensa de Ygor">
+                    <img src="assets/icon-cara-brava.webp" alt="" aria-hidden="true" width="261" height="245" />
+                    <span><strong>Ygor ofendeu</strong><small>+1</small></span>
+                    <span class="particle-layer" aria-hidden="true"></span>
+                  </button>
+                  <button class="arcade-button arcade-button--peace" type="button" data-action="peace" data-person="ygor" aria-label="Registrar um pedido de desculpas de Ygor">
+                    <img src="assets/icon-coracao.webp" alt="" aria-hidden="true" width="265" height="253" />
+                    <span><strong>Ygor pediu desculpas</strong><small>-1</small></span>
+                    <span class="particle-layer" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <div class="versus" aria-hidden="true">
+              <img src="assets/VS.webp" alt="VS" width="1254" height="1254" />
+            </div>
+
+            <article class="player-panel player-panel--julianne" aria-labelledby="julianne-card-title">
+              <div class="fighter-wrap fighter-wrap--julianne">
+                <span class="fighter-heart" aria-hidden="true">
+                  <img src="assets/icon-coracao.webp" alt="" width="265" height="253" />
+                </span>
+                <img class="fighter" src="assets/julianne.webp" alt="Julianne em posição de luta" width="898" height="1347" />
+              </div>
+
+              <div class="player-stack">
+                <div class="counter-card counter-card--julianne">
+                  <img class="frame frame--counter" src="assets/card-julianne.svg" alt="" aria-hidden="true" />
+                  <div class="counter-content">
+                    <div class="counter-heading">
+                      <img class="profile" src="assets/julianne-perfil.svg" alt="Retrato de Julianne" width="1254" height="1254" />
+                      <h2 id="julianne-card-title">Ofensas da <strong>Julianne</strong></h2>
+                    </div>
+                    <p class="score-number" id="julianne-score" aria-live="polite">0</p>
+                    <p class="counter-tagline">“Mais empatia, mais amor.”</p>
+                  </div>
+                </div>
+
+                <div class="action-stack">
+                  <button class="arcade-button arcade-button--offense" type="button" data-action="offense" data-person="julianne" aria-label="Registrar uma ofensa de Julianne">
+                    <img src="assets/icon-cara-brava.webp" alt="" aria-hidden="true" width="261" height="245" />
+                    <span><strong>Julianne ofendeu</strong><small>+1</small></span>
+                    <span class="particle-layer" aria-hidden="true"></span>
+                  </button>
+                  <button class="arcade-button arcade-button--peace" type="button" data-action="peace" data-person="julianne" aria-label="Registrar um pedido de desculpas de Julianne">
+                    <img src="assets/icon-coracao.webp" alt="" aria-hidden="true" width="265" height="253" />
+                    <span><strong>Julianne pediu desculpas</strong><small>-1</small></span>
+                    <span class="particle-layer" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <section class="stats-grid" id="statistics" aria-label="Estatísticas do casal">
+            <article class="stat-card">
+              <img class="frame frame--stat" src="assets/card-ratangular.svg" alt="" aria-hidden="true" />
+              <div class="stat-content">
+                <img src="assets/icon-calendario.webp" alt="" aria-hidden="true" width="288" height="280" />
+                <div><span>Dias sem discussão</span><strong id="streak-value">0</strong><small>Nosso recorde: <b id="record-value">0</b> dias</small></div>
+              </div>
+            </article>
+            <article class="stat-card">
+              <img class="frame frame--stat" src="assets/card-ratangular.svg" alt="" aria-hidden="true" />
+              <div class="stat-content">
+                <img src="assets/icon-chat.webp" alt="" aria-hidden="true" width="250" height="223" />
+                <div><span>Pedidos de desculpa</span><strong id="apologies-value">0</strong><small>Humildade sempre</small></div>
+              </div>
+            </article>
+            <article class="stat-card">
+              <img class="frame frame--stat" src="assets/card-ratangular.svg" alt="" aria-hidden="true" />
+              <div class="stat-content">
+                <img src="assets/icon-trofeu.webp" alt="" aria-hidden="true" width="278" height="252" />
+                <div><span>Vitórias da paz</span><strong id="peace-value">0</strong><small>Mais amor, por favor</small></div>
+              </div>
+            </article>
+            <article class="stat-card">
+              <img class="frame frame--stat" src="assets/card-ratangular.svg" alt="" aria-hidden="true" />
+              <div class="stat-content">
+                <img src="assets/icon-grafico.webp" alt="" aria-hidden="true" width="271" height="249" />
+                <div><span>Total de ofensas</span><strong id="total-value">0</strong><small>Em queda! <b class="trend-arrow" aria-hidden="true">↓</b></small></div>
+              </div>
+            </article>
+          </section>
+
+        </div>
+      </section>
+
+      <section class="content-section memories-section" id="memories" aria-labelledby="memories-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <div class="memories-kicker">
+              <img class="memories-label" src="assets/diario da paz.webp" alt="Diário da Paz" width="1883" height="347" loading="lazy" decoding="async" />
+            </div>
+            <h2 class="memories-heading-title" id="memories-title">
+              <img src="assets/memorias da paz h2.webp" alt="Memórias da Paz" width="1506" height="361" loading="lazy" decoding="async" />
+            </h2>
+            <p>Pequenos momentos que lembram que sempre dá para escolher o diálogo.</p>
+          </div>
+          <div class="memories-list" id="memories-list" aria-live="polite"></div>
+          <div class="reset-count-wrap">
+            <button class="reset-count-button" id="reset-count" type="button" aria-label="Resetar contagem">
+              <img src="assets/botao resetar contagem.webp" alt="" aria-hidden="true" width="1257" height="303" loading="lazy" decoding="async" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="about-section" id="sobre" aria-labelledby="about-title">
+        <picture class="about-background-picture">
+          <source media="(max-width: 767px)" srcset="assets/fundo-sobre-mobile.webp" type="image/webp" />
+          <img class="about-background" src="assets/fundo-sobre.webp" alt="" aria-hidden="true" width="1920" height="1080" loading="lazy" decoding="async" />
+        </picture>
+        <div class="about-overlay" aria-hidden="true"></div>
+
+        <div class="about-content">
+          <div class="about-intro">
+            <img class="about-label" src="assets/sobre o projeto.webp" alt="Sobre o projeto" width="706" height="139" loading="lazy" decoding="async" />
+            <h2 class="sr-only" id="about-title">Mais diálogo, menos ofensa</h2>
+            <img class="about-title-art" src="assets/h2 sobre o projeto.webp" alt="" aria-hidden="true" width="1236" height="459" loading="lazy" decoding="async" />
+            <p class="about-description"><span class="about-description-full">O Contador de Ofensas nasceu como uma brincadeira entre nós para transformar momentos de estresse em mais consciência. Em vez de deixar uma palavra ruim passar batida, a gente registra, conversa, pede desculpas e acompanha nossa evolução.</span><span class="about-description-mobile">O Contador de Ofensas transforma momentos de estresse em consciência. A gente registra, conversa, pede desculpas e acompanha nossa evolução.</span></p>
+          </div>
+
+          <div class="about-characters" aria-hidden="true">
+            <img class="about-character about-character--ygor" src="assets/sobre-ygor.webp" alt="" width="624" height="780" loading="lazy" decoding="async" />
+            <img class="about-character about-character--julianne" src="assets/sobre-julianne.webp" alt="" width="742" height="870" loading="lazy" decoding="async" />
+          </div>
+
+          <div class="about-cards" aria-label="Como o projeto ajuda">
+            <article class="about-card">
+              <img class="about-card-frame" src="assets/card-rosa-sobre-projeto.svg" alt="" aria-hidden="true" width="265" height="214" loading="lazy" decoding="async" />
+              <div class="about-card-content">
+                <img class="about-card-icon" src="assets/coracao-sobre-icon.webp" alt="" aria-hidden="true" width="133" height="108" loading="lazy" decoding="async" />
+                <h3>Registra</h3>
+                <p>Anote cada ofensa e transforme o impulso em consciência.</p>
+              </div>
+            </article>
+            <article class="about-card">
+              <img class="about-card-frame" src="assets/card-azul-sobre-projeto.svg" alt="" aria-hidden="true" width="265" height="214" loading="lazy" decoding="async" />
+              <div class="about-card-content">
+                <img class="about-card-icon" src="assets/balao-sobre-icon.webp" alt="" aria-hidden="true" width="144" height="110" loading="lazy" decoding="async" />
+                <h3>Reflete</h3>
+                <p>Perceba padrões e entenda o que costuma gerar atrito.</p>
+              </div>
+            </article>
+            <article class="about-card">
+              <img class="about-card-frame" src="assets/card-rosa-sobre-projeto.svg" alt="" aria-hidden="true" width="265" height="214" loading="lazy" decoding="async" />
+              <div class="about-card-content">
+                <img class="about-card-icon" src="assets/trofeu-sobre-icon.webp" alt="" aria-hidden="true" width="121" height="108" loading="lazy" decoding="async" />
+                <h3>Conecta</h3>
+                <p>Valorize pedidos de desculpa e pequenas vitórias da paz.</p>
+              </div>
+            </article>
+            <article class="about-card">
+              <img class="about-card-frame" src="assets/card-azul-sobre-projeto.svg" alt="" aria-hidden="true" width="265" height="214" loading="lazy" decoding="async" />
+              <div class="about-card-content">
+                <img class="about-card-icon" src="assets/grafico-sobre-icon.webp" alt="" aria-hidden="true" width="135" height="104" loading="lazy" decoding="async" />
+                <h3>Evolui</h3>
+                <p>Acompanhe o progresso e celebre uma relação mais leve.</p>
+              </div>
+            </article>
+          </div>
+
+          <blockquote class="about-quote">
+            <img class="about-quote-frame" src="assets/card-retangular-sobre-projeto.webp" alt="" aria-hidden="true" width="1600" height="257" loading="lazy" decoding="async" />
+            <p>No fim, não é sobre quem ofende menos. É sobre escolher conversar melhor, todos os dias <span class="about-quote-heart" aria-hidden="true">♥</span></p>
+          </blockquote>
+        </div>
+      </section>
+    </main>
+
+  </body>
+</html>
