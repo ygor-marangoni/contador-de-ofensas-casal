@@ -151,7 +151,7 @@ export class RelationshipCounter extends DurableObject {
 
       state[action.person] += 1;
       state.lastFightDate = now;
-      addMemory(state, `${personLabel} registrou uma ofensa`, 'offense', now);
+      addMemory(state, `${personLabel} realizou uma ofensa`, 'offense', now);
     }
 
     if (action.type === 'peace') {
