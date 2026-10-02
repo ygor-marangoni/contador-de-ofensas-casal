@@ -1,5 +1,7 @@
-const STORAGE_KEY = 'contador-ofensas';
 const DAY_IN_MS = 86400000;
+const STATE_ENDPOINT = '/api/state';
+const ACTION_ENDPOINT = '/api/action';
+const SHARED_SYNC_INTERVAL = 5000;
 
 const defaultState = {
   ygor: 0,
@@ -16,8 +18,14 @@ const personLabels = {
   julianne: 'Julianne'
 };
 
-let state = loadState();
+let state = null;
 let peaceToastTimer;
+let syncToastTimer;
+let syncPollTimer;
+let syncRequestSequence = 0;
+let lastAppliedRequestSequence = 0;
+let lastAppliedMutationSequence = 0;
+let syncErrorVisible = false;
 
 const elements = {
   body: document.body,
@@ -33,40 +41,153 @@ const elements = {
   peace: document.querySelector('#peace-value'),
   total: document.querySelector('#total-value'),
   memories: document.querySelector('#memories-list'),
+  resetCountWrap: document.querySelector('.reset-count-wrap'),
   resetCount: document.querySelector('#reset-count')
 };
 
-function loadState() {
-  try {
-    const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (!savedState || typeof savedState !== 'object') return { ...defaultState };
+elements.body.classList.add('is-state-loading');
 
-    return {
-      ...defaultState,
-      ...savedState,
-      ygor: Math.max(0, Number(savedState.ygor) || 0),
-      julianne: Math.max(0, Number(savedState.julianne) || 0),
-      apologies: Math.max(0, Number(savedState.apologies) || 0),
-      peaceWins: Math.max(0, Number(savedState.peaceWins) || 0),
-      recordDays: Math.max(0, Number(savedState.recordDays) || 0),
-      memories: Array.isArray(savedState.memories) ? savedState.memories.slice(0, 10) : []
-    };
+function normalizeState(remoteState) {
+  const source = remoteState && typeof remoteState === 'object' ? remoteState : {};
+
+  return {
+    ygor: Math.max(0, Number(source.ygor) || 0),
+    julianne: Math.max(0, Number(source.julianne) || 0),
+    apologies: Math.max(0, Number(source.apologies) || 0),
+    peaceWins: Math.max(0, Number(source.peaceWins) || 0),
+    recordDays: Math.max(0, Number(source.recordDays) || 0),
+    lastFightDate: Number.isFinite(Number(source.lastFightDate)) && Number(source.lastFightDate) > 0
+      ? Number(source.lastFightDate)
+      : null,
+    memories: Array.isArray(source.memories)
+      ? source.memories.filter((memory) => memory && typeof memory.message === 'string').slice(0, 10)
+      : []
+  };
+}
+
+function statesMatch(nextState) {
+  return state && JSON.stringify(state) === JSON.stringify(nextState);
+}
+
+function applyRemoteState(nextState, requestSequence, isMutation = false) {
+  if (isMutation) {
+    if (requestSequence < lastAppliedMutationSequence) return false;
+    lastAppliedMutationSequence = requestSequence;
+  } else if (requestSequence < lastAppliedRequestSequence || requestSequence < lastAppliedMutationSequence) {
+    return false;
+  }
+
+  const normalizedState = normalizeState(nextState);
+  const changed = !statesMatch(normalizedState);
+  state = normalizedState;
+  lastAppliedRequestSequence = Math.max(lastAppliedRequestSequence, requestSequence);
+  elements.body.classList.remove('is-state-loading');
+
+  if (changed) renderAll();
+  return changed;
+}
+
+async function readJsonResponse(response) {
+  const payload = await response.json().catch(() => null);
+  if (!response.ok || !payload?.state) {
+    throw new Error(payload?.error || `API request failed with status ${response.status}`);
+  }
+  return payload.state;
+}
+
+async function fetchSharedState() {
+  const response = await fetch(STATE_ENDPOINT, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { Accept: 'application/json' }
+  });
+
+  return readJsonResponse(response);
+}
+
+async function sendAction(type, person) {
+  const requestBody = type === 'reset' ? { type } : { type, person };
+  const response = await fetch(ACTION_ENDPOINT, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  return readJsonResponse(response);
+}
+
+function showSyncError(message = 'Não foi possível sincronizar. Tentando novamente...') {
+  syncErrorVisible = true;
+  window.clearTimeout(syncToastTimer);
+  elements.peaceToast.textContent = message;
+  elements.peaceToast.classList.remove('is-visible');
+  void elements.peaceToast.offsetWidth;
+  elements.peaceToast.classList.add('is-visible');
+  syncToastTimer = window.setTimeout(() => {
+    elements.peaceToast.classList.remove('is-visible');
+    elements.peaceToast.textContent = '';
+    syncErrorVisible = false;
+  }, 3200);
+}
+
+function clearSyncError() {
+  if (!syncErrorVisible) return;
+  window.clearTimeout(syncToastTimer);
+  elements.peaceToast.classList.remove('is-visible');
+  elements.peaceToast.textContent = '';
+  syncErrorVisible = false;
+}
+
+async function syncSharedState() {
+  const requestSequence = ++syncRequestSequence;
+
+  try {
+    const remoteState = await fetchSharedState();
+    applyRemoteState(remoteState, requestSequence, true);
+    clearSyncError();
   } catch (error) {
-    console.warn('Não foi possível carregar o progresso salvo.', error);
-    return { ...defaultState };
+    if (!state) elements.body.classList.remove('is-state-loading');
+    showSyncError();
+    console.warn('Não foi possível sincronizar o contador.', error);
   }
 }
 
-function saveState() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (error) {
-    console.warn('Não foi possível salvar o progresso.', error);
-  }
+function scheduleSharedPolling() {
+  window.clearTimeout(syncPollTimer);
+  if (document.hidden) return;
+
+  syncPollTimer = window.setTimeout(async () => {
+    await syncSharedState();
+    scheduleSharedPolling();
+  }, SHARED_SYNC_INTERVAL);
+}
+
+function setupSharedSynchronization() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      window.clearTimeout(syncPollTimer);
+      return;
+    }
+
+    void syncSharedState();
+    scheduleSharedPolling();
+  });
+
+  window.addEventListener('focus', () => {
+    void syncSharedState();
+    scheduleSharedPolling();
+  });
+
+  void syncSharedState();
+  scheduleSharedPolling();
 }
 
 function calculateStreak() {
-  const lastFight = Number(state.lastFightDate);
+  const lastFight = Number(state?.lastFightDate);
   if (!Number.isFinite(lastFight) || lastFight <= 0) return 0;
   const elapsed = Date.now() - lastFight;
   return Math.max(0, Math.floor(elapsed / DAY_IN_MS));
@@ -79,16 +200,12 @@ function renderCounters() {
 
 function renderStats() {
   const streak = calculateStreak();
-  const recordChanged = streak > state.recordDays;
-  if (recordChanged) state.recordDays = streak;
 
   elements.streak.textContent = streak;
   elements.record.textContent = state.recordDays;
   elements.apologies.textContent = state.apologies;
   elements.peace.textContent = state.peaceWins;
   elements.total.textContent = state.ygor + state.julianne;
-
-  if (recordChanged) saveState();
 }
 
 function formatMemoryDate(value) {
@@ -98,9 +215,11 @@ function formatMemoryDate(value) {
 }
 
 function renderMemories() {
+  const hasMemories = state.memories.length > 0;
+  if (elements.resetCountWrap) elements.resetCountWrap.hidden = !hasMemories;
   elements.memories.replaceChildren();
 
-  if (!state.memories.length) {
+  if (!hasMemories) {
     const empty = document.createElement('p');
     empty.className = 'memory-empty';
     empty.textContent = 'Ainda não há registros. O próximo capítulo pode começar com um pedido de desculpas.';
@@ -126,8 +245,8 @@ function renderMemories() {
     const icon = document.createElement('img');
     icon.className = 'memory-card-icon';
     icon.alt = '';
-    icon.width = 34;
-    icon.height = 34;
+    icon.setAttribute('width', '34');
+    icon.setAttribute('height', '34');
     icon.loading = 'lazy';
     icon.decoding = 'async';
     icon.setAttribute('aria-hidden', 'true');
@@ -175,15 +294,9 @@ function renderMemories() {
 }
 
 function renderAll() {
+  if (!state) return;
   renderCounters();
   renderStats();
-  renderMemories();
-}
-
-function addMemory(message, tone = 'neutral') {
-  state.memories.unshift({ message, tone, createdAt: Date.now() });
-  state.memories = state.memories.slice(0, 10);
-  saveState();
   renderMemories();
 }
 
@@ -227,23 +340,8 @@ function impactButton(button, type) {
   createParticles(type, button);
 }
 
-function incrementOffense(person) {
-  const streakBeforeFight = calculateStreak();
-  if (streakBeforeFight > state.recordDays) {
-    state.recordDays = streakBeforeFight;
-    addMemory(`Novo recorde: ${streakBeforeFight} dias sem discussão`, 'record');
-  }
-
-  state[person] += 1;
-  state.lastFightDate = Date.now();
-  addMemory(`${personLabels[person]} registrou uma ofensa`, 'offense');
-  saveState();
-  renderCounters();
-  renderStats();
-  animateCounter(elements[`${person}Score`]);
-}
-
 function showPeaceToast() {
+  clearSyncError();
   window.clearTimeout(peaceToastTimer);
   elements.peaceToast.textContent = '+1 vitória da paz ♥';
   elements.peaceToast.classList.remove('is-visible');
@@ -255,42 +353,47 @@ function showPeaceToast() {
   }, 1550);
 }
 
-function decrementOffense(person) {
-  state[person] = Math.max(0, state[person] - 1);
-  state.apologies += 1;
-  state.peaceWins += 1;
-  addMemory(`${personLabels[person]} escolheu a paz`, 'peace');
-  saveState();
-  renderCounters();
-  renderStats();
-  animateCounter(elements[`${person}Score`]);
-  showPeaceToast();
-}
-
-function handleAction(button) {
+async function handleAction(button) {
   const { action, person } = button.dataset;
-  if (!person || !['ygor', 'julianne'].includes(person)) return;
+  if (!state || !person || !['ygor', 'julianne'].includes(person) || !['offense', 'peace'].includes(action)) return;
 
   impactButton(button, action);
-  if (action === 'offense') incrementOffense(person);
-  if (action === 'peace') decrementOffense(person);
+  const requestSequence = ++syncRequestSequence;
+
+  try {
+    const remoteState = await sendAction(action, person);
+    applyRemoteState(remoteState, requestSequence, true);
+    animateCounter(elements[`${person}Score`]);
+    if (action === 'peace') showPeaceToast();
+    clearSyncError();
+  } catch (error) {
+    showSyncError('Não foi possível salvar. Tente novamente.');
+    console.warn('Não foi possível salvar a ação do contador.', error);
+  }
 }
 
-function resetCount() {
+async function resetCount() {
   const confirmed = window.confirm('Resetar a contagem e apagar as memórias salvas?');
-  if (!confirmed) return;
+  if (!confirmed || !state) return;
 
-  state = { ...defaultState, memories: [] };
-  saveState();
-  renderAll();
+  const requestSequence = ++syncRequestSequence;
+
+  try {
+    const remoteState = await sendAction('reset');
+    applyRemoteState(remoteState, requestSequence);
+    clearSyncError();
+  } catch (error) {
+    showSyncError('Não foi possível resetar. Tente novamente.');
+    console.warn('Não foi possível resetar o contador.', error);
+  }
 }
 
 function setupInteractions() {
   document.querySelectorAll('.arcade-button').forEach((button) => {
-    button.addEventListener('click', () => handleAction(button));
+    button.addEventListener('click', () => { void handleAction(button); });
   });
 
-  elements.resetCount?.addEventListener('click', resetCount);
+  elements.resetCount?.addEventListener('click', () => { void resetCount(); });
 
   elements.navToggle.addEventListener('click', () => {
     const isOpen = elements.nav.classList.toggle('is-open');
@@ -380,11 +483,11 @@ function setupAboutCharacterScale() {
   if ('ResizeObserver' in window) new ResizeObserver(syncCharacterScale).observe(about);
 }
 
-renderAll();
 setupInteractions();
 setupSectionObserver();
 setupAboutCharacterScale();
+setupSharedSynchronization();
 
-setInterval(() => {
-  renderStats();
+window.setInterval(() => {
+  if (state && !document.hidden) renderStats();
 }, 60000);

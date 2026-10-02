@@ -1,0 +1,12 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "shared-couple-counter",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "exports": {
+    "RelationshipCounter": {
+      "type": "durable-object",
+      "storage": "sqlite"
+    }
+  }
+}

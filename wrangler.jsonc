@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "contadordeofensas",
+  "pages_build_output_dir": ".",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "RELATIONSHIP_COUNTER",
+        "class_name": "RelationshipCounter",
+        "script_name": "shared-couple-counter"
+      }
+    ]
+  }
+}
