@@ -15,6 +15,8 @@ const defaultState = {
 
 const validPeople = ['ygor', 'julianne'];
 const validActions = ['offense', 'peace', 'reset'];
+const legacyOffenseMessage = 'registrou uma ofensa';
+const currentOffenseMessage = 'realizou uma ofensa';
 
 function createDefaultState() {
   return { ...defaultState, memories: [] };
@@ -42,7 +44,7 @@ function normalizeState(value) {
         .filter((memory) => memory && typeof memory.message === 'string')
         .slice(0, 10)
         .map((memory) => ({
-          message: memory.message,
+          message: memory.message.replace(legacyOffenseMessage, currentOffenseMessage),
           tone: ['neutral', 'record', 'offense', 'peace'].includes(memory.tone) ? memory.tone : 'neutral',
           createdAt: Number(memory.createdAt) || Date.now()
         }))
@@ -91,6 +93,16 @@ export class RelationshipCounter extends DurableObject {
           STATE_ROW_ID,
           JSON.stringify(createDefaultState())
         );
+      } else {
+        try {
+          const storedState = JSON.parse(rows[0].data);
+          const normalizedState = normalizeState(storedState);
+          if (JSON.stringify(storedState) !== JSON.stringify(normalizedState)) {
+            this.writeState(normalizedState);
+          }
+        } catch {
+          this.writeState(createDefaultState());
+        }
       }
     });
   }
